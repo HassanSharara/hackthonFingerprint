@@ -1,0 +1,20 @@
+[package]
+name = "image_rec"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+#tch = {version =  "0.13" , features = ["download-libtorch"] }
+image = "0.24"
+glob = "0.3"
+opencv = "0.95.1"
+tokio = { version = "1.47.1", features = ["full"] }
+water_http = "3.0.4"
+rand = "0.10.0-rc.0"
+serde = { version = "1.0.225", features = ["derive"] }
+serde_json = "1.0.145"
+
+[features]
+default = []
+debugging = ["water_http/debugging"]
