@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fingerprint Matcher - AI Verification</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .fingerprint-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            position: relative;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
+        }
+
+        .fingerprint-svg {
+            width: 100%;
+            height: 100%;
+            fill: #667eea;
+            filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
+        }
+
+        .upload-section {
+            margin-bottom: 30px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-preview {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-icon {
+            color: #667eea;
+            font-size: 1.5rem;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .remove-file {
+            background: #ff4757;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .remove-file:hover {
+            background: #ff3742;
+            transform: scale(1.1);
+        }
+
+        .model-section {
+            margin-bottom: 30px;
+        }
+
+        .section-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .model-select {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 50px;
+        }
+
+        .model-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .match-button {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .match-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .match-button:active {
+            transform: translateY(0);
+        }
+
+        .match-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-container {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 100px;
+            display: none;
+            animation: slideDown 0.5s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .json-output {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #10b981;
+            animation: glow-green 2s infinite;
+        }
+
+        .status-error {
+            background: #ef4444;
+            animation: glow-red 2s infinite;
+        }
+
+        .status-processing {
+            background: #f59e0b;
+            animation: glow-yellow 2s infinite;
+        }
+
+        @keyframes glow-green {
+            0%, 100% { box-shadow: 0 0 5px rgba(16, 185, 129, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.8); }
+        }
+
+        @keyframes glow-red {
+            0%, 100% { box-shadow: 0 0 5px rgba(239, 68, 68, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(239, 68, 68, 0.8); }
+        }
+
+        @keyframes glow-yellow {
+            0%, 100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.5); }
+            50% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.8); }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc2626;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 30px 15px;
+            }
+        }
+
+        /* Ripple effect */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="fingerprint-icon">
+                <svg class="fingerprint-svg" viewBox="0 0 24 24">
+                    <path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 5.65c1.5.77 2.76 1.86 3.75 3.25.16.22.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21zm6.25 12.07c-.13 0-.26-.05-.35-.15-.87-.87-1.34-2.04-1.34-3.30 0-2.58 2.07-4.68 4.62-4.68s4.68 2.09 4.68 4.68c0 .76-.22 1.5-.64 2.15-.14.22-.43.29-.65.15-.22-.14-.29-.43-.15-.65.30-.47.44-1.01.44-1.65 0-1.93-1.56-3.49-3.49-3.49-1.93 0-3.49 1.56-3.49 3.49 0 .93.34 1.80.96 2.44.18.18.18.48 0 .66-.09.1-.22.15-.35.15zm7.17-1.85c-.13 0-.26-.05-.35-.15-.87-.87-1.34-2.04-1.34-3.30 0-2.58 2.07-4.68 4.62-4.68.76 0 1.5.22 2.15.64.22.14.29.43.15.65-.14.22-.43.29-.65.15-.47-.30-1.01-.44-1.65-.44-1.93 0-3.49 1.56-3.49 3.49 0 .93.34 1.80.96 2.44.18.18.18.48 0 .66-.09.1-.22.15-.35.15z"/>
+                </svg>
+            </div>
+            <h1 class="title">Fingerprint Matcher</h1>
+            <p class="subtitle">AI-Powered Biometric Verification System</p>
+        </div>
+
+        <div class="upload-section">
+            <label class="section-label">
+                📁 Upload Fingerprint Image
+            </label>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">Drop your fingerprint image here</div>
+                <div class="upload-subtext">or click to browse (PNG, JPG, JPEG)</div>
+                <input type="file" class="file-input" id="fileInput" accept="image/*">
+            </div>
+            <div class="file-preview" id="filePreview">
+                <div class="file-info">
+                    <div class="file-icon">🖼️</div>
+                    <div class="file-details">
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                    <button class="remove-file" id="removeFile">×</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="model-section">
+            <label class="section-label">
+                🤖 Select AI Model
+            </label>
+            <select class="model-select" id="modelSelect">
+                <option value="">Choose an AI model...</option>
+                <option value=":8084/matchFingerprint">Rust STN + Siamese Trained Model ( the fastest and the highest results as linear process and memory managment)  </option>
+                <option value=":8000/stnsiamese">Python STN + Siamese Trained Model </option>
+                <option value=":8000/pythoncnn">Python CNN  Trained Model ( Contains Cache fixer so it the fastest as ai model ) </option>
+                <option value=":8000/pythonsiamesesift">Python Siamese + SiftM Model</option>
+                <option value=":8084/sift"> Rust sfit </option>
+            </select>
+        </div>
+
+        <button class="match-button" id="matchButton" disabled>
+            <div class="loading-spinner" id="loadingSpinner"></div>
+            <span class="button-text" id="buttonText">🔍 Match Fingerprint</span>
+        </button>
+
+        <div class="results-section">
+            <div class="results-container" id="resultsContainer">
+                <div class="results-header" id="resultsHeader">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    API Response
+                </div>
+                <div class="json-output" id="jsonOutput"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedFile = null;
+        let isProcessing = false;
+
+        // DOM elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const filePreview = document.getElementById('filePreview');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const removeFile = document.getElementById('removeFile');
+        const modelSelect = document.getElementById('modelSelect');
+        const matchButton = document.getElementById('matchButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const buttonText = document.getElementById('buttonText');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsHeader = document.getElementById('resultsHeader');
+        const statusIndicator = document.getElementById('statusIndicator');
+        const jsonOutput = document.getElementById('jsonOutput');
+
+        // Initialize event listeners
+        function initializeEventListeners() {
+            // File upload events
+            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+            uploadArea.addEventListener('drop', handleDrop);
+            fileInput.addEventListener('change', handleFileSelect);
+            removeFile.addEventListener('click', handleRemoveFile);
+
+            // Model selection
+            modelSelect.addEventListener('change', updateMatchButton);
+
+            // Match button
+            matchButton.addEventListener('click', handleMatch);
+
+            // Ripple effect for button
+            matchButton.addEventListener('click', createRipple);
+        }
+
+        // File handling functions
+        function handleDragOver(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelection(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileSelection(file);
+            }
+        }
+
+        function handleFileSelection(file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showError('Please select a valid image file (PNG, JPG, JPEG)');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size must be less than 10MB');
+                return;
+            }
+
+            selectedFile = file;
+            displayFilePreview(file);
+            updateMatchButton();
+        }
+
+        function displayFilePreview(file) {
+            fileName.textContent = file.name;
+            fileSize.textContent = formatFileSize(file.size);
+            filePreview.style.display = 'block';
+            uploadArea.style.display = 'none';
+        }
+
+        function handleRemoveFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            filePreview.style.display = 'none';
+            uploadArea.style.display = 'block';
+            updateMatchButton();
+            hideResults();
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // UI update functions
+        function updateMatchButton() {
+            const hasFile = selectedFile !== null;
+            const hasModel = modelSelect.value !== '';
+            matchButton.disabled = !hasFile || !hasModel || isProcessing;
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            
+            // Remove existing error messages
+            const existingError = document.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+            
+            // Insert after upload section
+            const uploadSection = document.querySelector('.upload-section');
+            uploadSection.appendChild(errorDiv);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (errorDiv.parentNode) {
+                    errorDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // API and matching functions
+        async function handleMatch() {
+            if (!selectedFile || !modelSelect.value || isProcessing) return;
+
+            setProcessingState(true);
+            showResults('processing', 'Processing fingerprint...');
+
+            try {
+                // Simulate API call with realistic delay
+                simulateAPICall(
+                    data =>{
+                                        showResults(
+                                        data['status'] == 'success' ? 'success' : 'error'    
+                                        , data);
+
+                    }
+                );
+            } catch (error) {
+                showResults('error', { error: error.message });
+            } finally {
+                setProcessingState(false);
+            }
+        }
+
+        function setProcessingState(processing) {
+            isProcessing = processing;
+            matchButton.disabled = processing;
+            
+            if (processing) {
+                loadingSpinner.style.display = 'inline-block';
+                buttonText.textContent = 'Processing...';
+            } else {
+                loadingSpinner.style.display = 'none';
+                buttonText.textContent = '🔍 Match Fingerprint';
+            }
+        }
+
+         function simulateAPICall(ondata) {
+            const selectedItem = document.getElementById("modelSelect")
+            const selectedOption = selectedItem.options[selectedItem.selectedIndex]
+            const url = "http://localhost" + selectedOption.value 
+            const formdata = new FormData()
+             const fileInput = document.getElementById("fileInput");
+             const file = fileInput.files[0];
+             formdata.append("image",file)
+            console.log(url)
+            fetch(url,{
+                method:"POST",
+                body:formdata
+            })
+            .then(response => response.json() )
+            .then(data => {
+                // document.getElementById("result").textContent = results
+                ondata(data)
+            })
+        }
+
+        function showResults(status, data) {
+            resultsContainer.style.display = 'block';
+            statusIndicator.className = `status-indicator status-${status}`;
+            
+            let headerText = 'API Response';
+            if (status === 'success') {
+                headerText = data.status == "success" ? 'Match Found ✅' : 'No Match Found ❌';
+            } else if (status === 'err') {
+                headerText = 'Processing Error ⚠️';
+            } else if (status === 'processing') {
+                headerText = 'Processing... ⏳';
+            }
+            
+            resultsHeader.innerHTML = `<span class="status-indicator status-${status}"></span>${headerText}`;
+            jsonOutput.textContent = JSON.stringify(data, null, 2);
+        }
+
+        function hideResults() {
+            resultsContainer.style.display = 'none';
+        }
+
+        // Visual effects
+        function createRipple(e) {
+            const button = e.currentTarget;
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', initializeEventListeners);
+    </script>
+</body>
+</html>
+
