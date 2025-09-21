@@ -36,7 +36,7 @@ pub async fn upload_file<'a,H:Send + 'static , const HS:usize,const Q:usize>(con
         if let Some(data) = field {
             use tokio::io::AsyncWriteExt;
 
-            let file_name = format!("mount/cache/fingerprint/{}.png",random_filename(12));
+            let file_name = format!("mount/cache/fingerprint/{}.png",random_filename(20));
             let pat = std::path::Path::new(OsStr::new(&file_name));
             let file = tokio::fs::File::create(pat).await;
             match file {
@@ -45,7 +45,7 @@ pub async fn upload_file<'a,H:Send + 'static , const HS:usize,const Q:usize>(con
                     let start_time = SystemTime::now();
                     match crate::ai::match_using_sift(
                         &file_name,
-                        "mount/hres/hard") {
+                        "mount/hres/easy") {
                         Ok((best,mut score))=>{
                             let mut sender = context.sender();
                             sender.set_header("Access-Control-Allow-Origin","*");
@@ -62,7 +62,7 @@ pub async fn upload_file<'a,H:Send + 'static , const HS:usize,const Q:usize>(con
                                 if score < 11 {
                                     let res = serde_json::json!({
                                         "status":"err",
-                                        "msg":"the image is not even a fingerprint",
+                                        "msg":"the image is not even a real fingerprint",
                                         "matching-time":dif,
                                         "verified":verified
                                     });
@@ -95,13 +95,18 @@ pub async fn upload_file<'a,H:Send + 'static , const HS:usize,const Q:usize>(con
                             }
 
                         }
-                        Err(_)=>{
+                        Err(e)=>{
+                         let m = format!("{:?}",e);
+                            let mut sender = context.sender();
+                            sender.set_header("Access-Control-Allow-Origin","*");
+                            sender.set_header("Access-Control-Allow-Methods","*");
                             let res = serde_json::json!({
                                     "status":"err",
-                                    "msg":"invalid fingerprint please try again"
+                                    "file_error":"h sec alert",
+                                    "msg":m
                                 });
-                            _= context.send_json(&res).await;
-                        }
+                            _= sender.send_json(&res).await;                        
+}
                     }
                     return;
                 }

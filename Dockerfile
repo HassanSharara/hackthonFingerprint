@@ -8,11 +8,13 @@ RUN apt-get update && apt-get upgrade -y && \
     # Install Rust (via rustup)
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 RUN apt-get update
-wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip
+RUN wget https://download.pytorch.org/libtorch/cpu/libtorch-shared-with-deps-latest.zip
 RUN unzip libtorch-shared-with-deps-latest.zip -d /opt/libtorch
 ENV LIBTORCH=/opt/libtorch
 ENV LIBTORCH_USE_CUDA=0
 COPY Cargo.toml .
 COPY src ./src
-
-CMD ["bash"]
+COPY mount ./mount
+ENV PATH="/root/.cargo/bin:${PATH}"
+RUN cargo build --release
+CMD ["bash","-c","cargo run --release"]
