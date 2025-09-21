@@ -432,8 +432,12 @@
                 </svg>
             </div>
             <h1 class="title">Fingerprint Matcher</h1>
-            <p class="subtitle">AI-Powered Biometric Verification System</p>
+
+            <p class="subtitle">AI-Powered Biometric Verification System (hassan sharara)</p>
+
         </div>
+
+
 
         <div class="upload-section">
             <label class="section-label">
@@ -667,7 +671,7 @@
          function simulateAPICall(ondata) {
             const selectedItem = document.getElementById("modelSelect")
             const selectedOption = selectedItem.options[selectedItem.selectedIndex]
-            const url = "http://localhost" + selectedOption.value 
+            const url = window.location.protocol + "//"+window.location.hostname  + selectedOption.value 
             const formdata = new FormData()
              const fileInput = document.getElementById("fileInput");
              const file = fileInput.files[0];

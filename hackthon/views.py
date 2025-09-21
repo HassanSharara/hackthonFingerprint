@@ -38,7 +38,7 @@ def matchFingerprint(request:HttpRequest):
       if score < 8:
          return JsonResponse({
             "status":"err",
-            "msg":"the image is not even an fingerprint",
+            "msg":"the image is not even an real fingerprint",
             "verified":verified,
                      "matching-time":f"{end - start} seconds",
          })
@@ -76,7 +76,7 @@ def pythonsiamesesift(request:HttpRequest):
       if score < 8:
          return JsonResponse({
             "status":"err",
-            "msg":"the image is not even an fingerprint",
+            "msg":"the image is not even a real fingerprint",
             "verified":verified,
                      "matching-time":f"{end - start} seconds",
          })
@@ -110,9 +110,17 @@ def pythoncnn(request:HttpRequest):
       start = time.time()
       best_match,score = model.match_fingerprint(total_file_name,os.path.join(settings.BASE_DIR,"hackthon/static/hres/easy"))
       end = time.time()
+      verified = bool(score > 55)
+      if score < 20:
+        return JsonResponse({"status":"err","msg":"the image is not even a real fingerprint",
+
+        "verified":verified,"match-time":f"{end -start} seconds"})
+      if not verified:
+               return JsonResponse({"status":"err","verified":verified,
+                       "msg":"the fingerprint is not verified","match-time":f"{end-start} seconds"})
       return JsonResponse({
          "status":"success",
          "matching-time":f"{end - start} seconds",
-         "matching-path":findId(best_match),
+         "user-id":findId(best_match),
          "score":f"{score} %",
       })
